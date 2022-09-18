@@ -1,9 +1,11 @@
 require "clir"
 require "clirtest/version"
 require 'clirtest/errors_and_messages'
+require 'clirtest/Test'
 
 module Clirtest
   class ClirtestError < StandardError; end
+  class CLiTestNoMoreValuesError < StandardError; end
 
   class << self
 
@@ -12,14 +14,57 @@ module Clirtest
     #
     def run
       tests_folder_exist? || raise(ClirtestError.new 1000)
+      load_tests
+      if no_test?
+        raise(ClirtestError.new 100) 
+      else
+        commence
+        run_tests
+        termine
+      end
     rescue ClirtestError => e
       puts ERRORS[lang][e.message.to_i].rouge
     rescue Exception => e
       raise e
     end
 
+    ##
+    # Called before to run test
+    def commence
+      puts "Je dois apprendre à commencer les tests".jaune
+    end
+
+    ##
+    # Called when all test have been run
+    def termine
+      puts "Je dois apprendre à terminer les tests".jaune
+    end
+
     def lang
       'fr' # TODO
+    end
+
+    ##
+    # @return true if there's zero test to run
+    def no_test?
+      return tests.nil? || tests.empty?
+    end
+
+    ##
+    # Run every test
+    def run_tests
+      tests.shuffle.each do |test|
+        test.run
+      end
+    end
+
+    ##
+    # Load every test file
+    #
+    # Later: we'll be able to choose the tests to run
+    # 
+    def load_tests
+      test_files.each { |ft| require ft }
     end
 
     ##

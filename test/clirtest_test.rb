@@ -38,6 +38,7 @@ class ClirtestTest < Minitest::Test
     Clirtest.app_folder = File.join(CLIRTEST_FOLDER,'test','tested_apps','app_without_tests')
     out, err = capture_io { Clirtest.run }
     assert_match ERRORS['fr'][1000], out
+    assert_empty err
   end
 
   def test_test_folder_exists_return_right_value
@@ -62,6 +63,39 @@ class ClirtestTest < Minitest::Test
     fnontest = File.join(app_with_tests, 'tests', 'not_a_test_at_all.rb')
     assert File.exist?(fnontest)
     refute_includes files, fnontest
+  end
+
+  def test_respond_to_load_tests
+    assert_respond_to Clirtest, :load_tests
+  end
+
+  def test_load_tests_load_the_tests
+    Dir.chdir(app_with_tests) do
+      Clirtest.run # ça fait comme si on faisait les tests
+    end
+    #
+    # Les tests qu'on devrait trouver pour cette application
+    # (note : cette liste n'est pas exhaustive)
+    # 
+    tests_to_find = {
+      "Un tout premier test"  => './tests/premier_tests.rb::12',
+      "Un autre tests simple" => './tests/autre_test.rb::12'
+    }
+    Clirtest.tests.each do |test|
+      if tests_to_find.key?(test.name)
+        assert_equal test.place, tests_to_find[test.name]
+        delete tests_to_find[test.name]
+      end
+    end
+    assert_empty tests_to_find
+  end
+  
+  def test_respond_to_run_tests
+    assert_respond_to Clirtest, :run_tests
+  end
+
+  def test_run_tests_run_the_tests
+    assert false
   end
 
 end
