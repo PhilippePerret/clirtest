@@ -21,7 +21,25 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+~~~ruby
+
+require 'clirtest'
+
+if test?
+  ClirTest.run
+else
+  App.run
+end
+
+~~~
+
+Then in command line, if your app's runner is `myapp` :
+
+~~~bash
+
+myapp --test
+
+~~~
 
 ## Development
 

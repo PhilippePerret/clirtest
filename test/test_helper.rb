@@ -3,3 +3,5 @@ require "clirtest"
 
 require "minitest/autorun"
 require 'minitest/color'
+
+CLIRTEST_FOLDER = File.dirname(__dir__)
