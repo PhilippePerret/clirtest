@@ -1,7 +1,10 @@
 require "clir"
 require "clirtest/version"
 require 'clirtest/errors_and_messages'
-require 'clirtest/Test'
+require 'clirtest/Test.ins'
+require 'clirtest/Test.cls'
+require 'clirtest/Resultat'
+require 'clirtest/Should'
 
 module Clirtest
   class ClirtestError < StandardError; end
@@ -19,7 +22,7 @@ module Clirtest
         raise(ClirtestError.new 100) 
       else
         commence
-        run_tests
+        Test.run
         termine
       end
     rescue ClirtestError => e
@@ -41,21 +44,13 @@ module Clirtest
     end
 
     def lang
-      'fr' # TODO
+      (CLI.options[:lang]||CLI.params[:lang]||Config[:lang]) || 'en'
     end
 
     ##
     # @return true if there's zero test to run
     def no_test?
       return tests.nil? || tests.empty?
-    end
-
-    ##
-    # Run every test
-    def run_tests
-      tests.shuffle.each do |test|
-        test.run
-      end
     end
 
     ##
@@ -104,6 +99,14 @@ module Clirtest
       @tests_folder = nil
       @test_files   = nil
     end
+
+    ##
+    # Open manual
+    def open_manuel
+      pth = File.join(APP_FOLDER,'Manuel','Manuel.pdf')
+      `open "#{pth}"`
+    end
+
 
     private
 
