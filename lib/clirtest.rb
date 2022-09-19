@@ -1,5 +1,6 @@
 require "clir"
 require "clirtest/version"
+require "clirtest/Config"
 require 'clirtest/errors_and_messages'
 require 'clirtest/Test.ins'
 require 'clirtest/Test.cls'
@@ -18,12 +19,10 @@ module Clirtest
     def run
       tests_folder_exist? || raise(ClirtestError.new 1000)
       load_tests
-      if no_test?
+      if Test.no_tests?
         raise(ClirtestError.new 100) 
       else
-        commence
-        Test.run
-        termine
+        Test.run_tests
       end
     rescue ClirtestError => e
       puts ERRORS[lang][e.message.to_i].rouge
@@ -31,26 +30,8 @@ module Clirtest
       raise e
     end
 
-    ##
-    # Called before to run test
-    def commence
-      puts "Je dois apprendre à commencer les tests".jaune
-    end
-
-    ##
-    # Called when all test have been run
-    def termine
-      puts "Je dois apprendre à terminer les tests".jaune
-    end
-
     def lang
       (CLI.options[:lang]||CLI.params[:lang]||Config[:lang]) || 'en'
-    end
-
-    ##
-    # @return true if there's zero test to run
-    def no_test?
-      return tests.nil? || tests.empty?
     end
 
     ##

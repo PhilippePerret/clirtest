@@ -15,11 +15,15 @@ end
 module Clirtest
 class Test
 
-  class RegularTestError < StandardError; end
+  class RegularTestError  < StandardError; end
+  class FatalTestError    < StandardError; end
 
   
   attr_reader :name
   attr_reader :place
+  attr_reader :fatal_error
+
+
   def initialize(name, &block)
     @name   = name
     @place  = extract_from(caller[2]) #=> {PlaceInFile}
@@ -64,6 +68,10 @@ class Test
   # Exécution du test
   # 
   def run
+    valid? || begin
+      on_failure(fatal_error)
+      return
+    end
     exec_proc_pre_check || return
     begin
       exec_operation
@@ -126,9 +134,21 @@ class Test
   def print_error_report(indexError)
     puts "\n\n"
     titre = "Error ##{indexError + 1}"
-    puts "#{titre}\n#{'-'*titre.length}".rouge + (' '*4) + "#{place}".gris
-    puts @description.rouge
-    puts @error.rouge
+    puts "#{titre}\n#{'-'*titre.length}".rouge + (' '*4) + "#{place.to_str}".gris
+    puts @description.rouge if defined?(@description)
+    puts (fatal_error || @error).rouge
+  end
+
+  # --- State Methods ---
+
+  def valid?
+    defined?(@commande) || raise(FatalTestError.new 2000)
+    defined?(@resultat) || raise(FatalTestError.new 2001)
+  rescue FatalTestError => e
+    @fatal_error = ERRORS[Clirtest.lang][e.message.to_i]
+    return false
+  else
+    return true
   end
 
 
@@ -185,8 +205,11 @@ PlaceInFile = Struct.new(:relpath, :line, :method, :other) do
   def filename
     @filename ||= File.basename(relpath)
   end
+  def relative_path
+    @relative_path ||= path.sub(/^#{Regexp.escape(Clirtest.app_folder)}/,'.')
+  end
   def to_str
-    @to_str ||= "#{relpath}::#{line}"
+    @to_str ||= "#{relative_path}::#{line}"
   end
 end
 

@@ -37,7 +37,7 @@ class ClirtestTest < Minitest::Test
   def test_warning_if_tests_folder_does_not_exist
     Clirtest.app_folder = File.join(CLIRTEST_FOLDER,'test','tested_apps','app_without_tests')
     out, err = capture_io { Clirtest.run }
-    assert_match ERRORS['fr'][1000], out
+    assert_match ERRORS['en'][1000], out
     assert_empty err
   end
 
@@ -78,20 +78,32 @@ class ClirtestTest < Minitest::Test
     # (note : cette liste n'est pas exhaustive)
     # 
     tests_to_find = {
-      "Un tout premier test"  => './tests/premier_tests.rb::12',
+      "Un tout premier test"  => './tests/premier_test.rb::12',
       "Un autre tests simple" => './tests/autre_test.rb::12'
     }
-    Clirtest.tests.each do |test|
+    Clirtest::Test.items.each do |test|
       if tests_to_find.key?(test.name)
-        assert_equal test.place, tests_to_find[test.name]
-        delete tests_to_find[test.name]
+        assert_equal test.place.to_str, tests_to_find[test.name]
+        tests_to_find.delete(test.name)
       end
     end
     assert_empty tests_to_find
   end
   
   def test_respond_to_run_tests
-    assert_respond_to Clirtest, :run_tests
+    assert_respond_to Clirtest::Test, :run_tests
+  end
+  def test_respond_to_init_run
+    assert_respond_to Clirtest::Test, :init_run
+  end
+  def test_init_run_do_its_job
+    Clirtest::Test.instance_variable_set('@success', nil)
+    Clirtest::Test.instance_variable_set('@failures', nil)
+    assert_nil Clirtest::Test.success
+    assert_nil Clirtest::Test.failures
+    Clirtest::Test.init_run
+    assert_equal [], Clirtest::Test.success
+    assert_equal [], Clirtest::Test.failures
   end
 
   def test_run_tests_run_the_tests

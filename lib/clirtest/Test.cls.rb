@@ -4,12 +4,15 @@ module Clirtest
 class Test
 class << self
 
+  attr_reader :items
+  attr_reader :success, :failures
+
   ##
   # On lance la suite de tests
   # 
-  def run
-    @items = @items.shuffle unless config.in_order?
-    init
+  def run_tests
+    @items = @items.shuffle unless Config.tests_in_order?
+    init_run
     begin
       @start_time = Time.now.to_f
       @items.each(&:run)
@@ -31,7 +34,7 @@ class << self
   ##
   # Initialisation des tests
   # 
-  def init
+  def init_run
     @success  = []
     @failures = []
     ENV['MODE_CLI_TEST'] = 'true'
@@ -86,10 +89,8 @@ class << self
     @items << test
   end
 
-  ##
-  # Configuration des tests
-  def config
-    @config ||= NewCliTest::Configuration.new
+  def no_tests?
+    @items.nil? || @items.empty?
   end
 
 end #/ << self class Test
